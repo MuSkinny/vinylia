@@ -1,0 +1,65 @@
+{
+  "expo": {
+    "name": "Vinylia",
+    "slug": "vinylia",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "dark",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#1a1a1a"
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.vinylia.app",
+      "infoPlist": {
+        "NSCameraUsageDescription": "Vinylia needs access to your camera to scan vinyl barcodes.",
+        "NSPhotoLibraryUsageDescription": "Vinylia needs access to your photo library to save vinyl covers."
+      },
+      "buildNumber": "1"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#1a1a1a"
+      },
+      "package": "com.vinylia.app",
+      "permissions": [
+        "CAMERA",
+        "READ_EXTERNAL_STORAGE",
+        "WRITE_EXTERNAL_STORAGE",
+        "android.permission.CAMERA",
+        "android.permission.RECORD_AUDIO"
+      ]
+    },
+    "web": {
+      "favicon": "./assets/favicon.png",
+      "bundler": "metro"
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Allow Vinylia to access your camera to scan vinyl barcodes."
+        }
+      ]
+    ],
+    "scheme": "vinylia",
+    "experiments": {
+      "typedRoutes": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "9642bf67-6371-4f5c-9e09-6f6590e55bbd"
+      }
+    },
+    "owner": "muskinny"
+  }
+}

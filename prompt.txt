@@ -1,0 +1,313 @@
+App name: vinylia
+
+You are a senior mobile engineering team.
+
+Your task is to design and implement from scratch a production-ready mobile application focused on a personal, interactive vinyl record library with a strong storytelling and social layer.
+
+This prompt is strictly about building the app.
+
+1. App Scope (MVP)
+
+Build a mobile-first application with:
+
+iOS and Android support
+
+Clean, modern, dynamic UI
+
+Fast onboarding
+
+Minimal friction
+
+The app must allow users to:
+
+add vinyl records easily
+
+build a personal library
+
+attach personal stories and context
+
+interact with other users in a lightweight social way
+
+2. Mandatory Tech Stack
+Mobile App
+
+React Native
+
+TypeScript
+
+Expo
+
+React Navigation
+
+Zustand (or Redux Toolkit)
+
+Backend
+
+Node.js
+
+NestJS
+
+REST API
+
+JWT authentication
+
+Firebase Auth (or equivalent)
+
+Database
+
+PostgreSQL
+
+Prisma ORM
+
+Media
+
+Cloudinary (images only)
+
+3. Vinyl Metadata (Zero Cost)
+
+Use MusicBrainz API as the only metadata source:
+
+artist
+
+album
+
+year
+
+tracklist
+
+cover art (if available)
+
+Rules:
+
+Users NEVER manually input metadata
+
+Users search or scan, then confirm
+
+Metadata is read-only for users
+
+4. Core App Features (Implement Fully)
+4.1 Authentication
+
+Email/password
+
+Google / Apple login
+
+Minimal onboarding
+
+4.2 Add Vinyl Flow (Critical)
+
+Implement this exact flow:
+
+Search vinyl by artist or album name
+
+Fetch results from MusicBrainz
+
+Show album cover + main info
+
+One-tap confirmation
+
+Immediately open storytelling screen:
+
+“Why is this record part of your story?”
+
+Optional text input
+
+Optional mood / tag selection
+
+This flow must be fast and pleasant.
+
+4.3 Personal Library
+
+Grid view of vinyl covers
+
+Tap to open vinyl detail page
+
+Sort / filter by:
+
+genre
+
+mood
+
+custom tags
+
+Timeline view (date added)
+
+4.4 Storytelling Layer
+
+Each vinyl can have:
+
+multiple stories
+
+text-based entries
+
+timestamp
+
+optional mood tags
+
+Stories are the core content, not metadata.
+
+4.5 Social Layer (Lightweight)
+
+User profiles
+
+Follow / unfollow
+
+Like stories
+
+Comment on stories
+
+View other users’ libraries
+
+No chat.
+No notifications spam.
+No infinite scroll.
+
+5. UI / UX Requirements
+
+Design and implement UI with:
+
+Large cover images
+
+Smooth transitions
+
+Subtle animations
+
+Gesture-friendly interactions
+
+Focus on readability and emotion
+
+Style:
+
+Modern
+
+Warm
+
+Creative
+
+Inspired by physical vinyl culture
+
+Avoid:
+
+dense dashboards
+
+enterprise UI
+
+aggressive gamification
+
+6. Database Design (Flexible)
+
+Design a modular and extensible schema.
+
+Core tables:
+
+users
+
+vinyls (canonical metadata from MusicBrainz)
+
+user_vinyls (ownership + personal context)
+
+stories
+
+playlists
+
+follows
+
+likes
+
+comments
+
+tags
+
+media
+
+Rules:
+
+Separate canonical data from user-generated data
+
+Avoid rigid enums
+
+Allow future extensions without migrations chaos
+
+7. API Requirements
+
+Implement:
+
+Auth endpoints
+
+Vinyl search endpoint (MusicBrainz proxy)
+
+CRUD for:
+
+user library
+
+stories
+
+playlists
+
+interactions
+
+Use:
+
+DTO validation
+
+Error handling
+
+Pagination where needed
+
+8. Performance & Quality
+
+Optimize image loading
+
+Lazy loading
+
+Handle empty states gracefully
+
+Offline-safe reading (optional)
+
+Proper loading and error states
+
+9. Code Quality
+
+Clean architecture
+
+Clear separation of concerns
+
+Reusable components
+
+Typed everywhere
+
+Production-ready structure
+
+10. Final Output Required
+
+Generate:
+
+Full project structure (frontend + backend)
+
+Database schema (Prisma)
+
+API routes
+
+Core UI screens
+
+Vinyl add flow implementation
+
+MusicBrainz integration
+
+Example seed data
+
+Clear setup instructions
+
+Final Rule
+
+Every implementation choice must support:
+
+speed
+
+clarity
+
+emotional engagement
+
+future extensibility
+
+Build this app as if it were going live.

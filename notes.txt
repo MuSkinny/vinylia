@@ -1,0 +1,11 @@
+eas build --platform android --profile production
+npx expo run:android --variant release
+npx expo run ios --configuration Release
+eas build --platform android
+
+git checkout main
+git pull origin main
+git merge dev
+git push origin main
+
+git checkout dev
