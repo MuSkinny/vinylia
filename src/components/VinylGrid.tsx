@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import { FlatList, StyleSheet, View, ListRenderItem } from 'react-native';
 import { VinylCard } from './VinylCard';
 import { spacing } from '../theme';
@@ -10,6 +10,9 @@ export interface Vinyl {
   artist: string;
   album: string;
   mood?: MoodType;
+  year?: number;
+  genres?: string[];
+  addedAt?: string;
 }
 
 interface VinylGridProps {
@@ -27,7 +30,15 @@ export const VinylGrid: React.FC<VinylGridProps> = ({
   refreshing,
   onRefresh,
 }) => {
-  const renderItem: ListRenderItem<Vinyl> = ({ item }) => (
+  const handlePress = useCallback((id: string) => {
+    onVinylPress(id);
+  }, [onVinylPress]);
+
+  const handleLongPress = useCallback((id: string) => {
+    onVinylLongPress?.(id);
+  }, [onVinylLongPress]);
+
+  const renderItem: ListRenderItem<Vinyl> = useCallback(({ item }) => (
     <View style={styles.itemContainer}>
       <VinylCard
         id={item.id}
@@ -35,17 +46,19 @@ export const VinylGrid: React.FC<VinylGridProps> = ({
         artist={item.artist}
         album={item.album}
         mood={item.mood}
-        onPress={() => onVinylPress(item.id)}
-        onLongPress={onVinylLongPress ? () => onVinylLongPress(item.id) : undefined}
+        onPress={() => handlePress(item.id)}
+        onLongPress={onVinylLongPress ? () => handleLongPress(item.id) : undefined}
       />
     </View>
-  );
+  ), [handlePress, handleLongPress, onVinylLongPress]);
+
+  const keyExtractor = useCallback((item: Vinyl) => item.id, []);
 
   return (
     <FlatList
       data={vinyls}
       renderItem={renderItem}
-      keyExtractor={(item) => item.id}
+      keyExtractor={keyExtractor}
       numColumns={2}
       columnWrapperStyle={styles.row}
       contentContainerStyle={styles.container}
@@ -59,7 +72,7 @@ export const VinylGrid: React.FC<VinylGridProps> = ({
 const styles = StyleSheet.create({
   container: {
     paddingHorizontal: spacing.lg,
-    paddingBottom: 80, // Space for bottom nav
+    paddingBottom: 120, // Space for floating nav bar
   },
   row: {
     justifyContent: 'space-between',

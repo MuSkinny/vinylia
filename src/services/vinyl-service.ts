@@ -258,6 +258,31 @@ export const vinylService = {
     return data;
   },
 
+  // Get user's library (lightweight version for grid view)
+  async getUserLibraryBasic(userId: string) {
+    const { data, error } = await supabase
+      .from('user_vinyls')
+      .select(`
+        id,
+        mood,
+        added_at,
+        vinyl:vinyls(
+          id,
+          artist,
+          album,
+          year,
+          genres,
+          cover_art_thumb_url,
+          cover_art_url
+        )
+      `)
+      .eq('user_id', userId)
+      .order('added_at', { ascending: false});
+
+    if (error) throw error;
+    return data;
+  },
+
   // Get single user vinyl
   async getUserVinyl(userVinylId: string) {
     const { data, error } = await supabase

@@ -39,8 +39,9 @@ export default function MyVinylDetailScreen() {
   const { data: vinyl, isLoading } = useQuery({
     queryKey: ['my-vinyl', userVinylId],
     queryFn: async () => {
-      // Fetch single vinyl directly instead of entire library
-      const item = await vinylService.getUserVinyl(userVinylId!);
+      // Fetch from user's library
+      const library = await vinylService.getUserLibrary(user!.id);
+      const item = library.find((v: any) => v.id === userVinylId);
       if (item) {
         setStory(item.story || '');
         setSelectedMood(item.mood || null);
@@ -56,7 +57,6 @@ export default function MyVinylDetailScreen() {
     if (vinyl && newStory !== vinyl.story) {
       await vinylService.updateStory(userVinylId!, newStory);
       queryClient.invalidateQueries({ queryKey: ['my-vinyl', userVinylId] });
-      queryClient.invalidateQueries({ queryKey: ['library', user?.id] }); // Add library invalidation
     }
   });
 

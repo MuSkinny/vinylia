@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import { View, StyleSheet, ViewStyle, Animated } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { colors, borderRadius } from '../theme';
 
 interface SkeletonBoxProps {
@@ -9,34 +10,33 @@ interface SkeletonBoxProps {
 }
 
 export const SkeletonBox: React.FC<SkeletonBoxProps> = ({ width, height, style }) => {
-  const opacity = useRef(new Animated.Value(0.3)).current;
+  const translateX = useRef(new Animated.Value(-300)).current;
 
   useEffect(() => {
     Animated.loop(
-      Animated.sequence([
-        Animated.timing(opacity, {
-          toValue: 0.7,
-          duration: 1000,
-          useNativeDriver: true,
-        }),
-        Animated.timing(opacity, {
-          toValue: 0.3,
-          duration: 1000,
-          useNativeDriver: true,
-        }),
-      ])
+      Animated.timing(translateX, {
+        toValue: 300,
+        duration: 1500,
+        useNativeDriver: true,
+      })
     ).start();
   }, []);
 
   return (
-    <Animated.View
-      style={[
-        styles.skeleton,
-        { width, height },
-        { opacity },
-        style,
-      ]}
-    />
+    <View style={[styles.skeleton, { width, height }, style]}>
+      <Animated.View style={[StyleSheet.absoluteFill, { transform: [{ translateX }] }]}>
+        <LinearGradient
+          colors={[
+            'transparent',
+            'rgba(255,255,255,0.4)',
+            'transparent',
+          ]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 0 }}
+          style={StyleSheet.absoluteFill}
+        />
+      </Animated.View>
+    </View>
   );
 };
 
@@ -56,6 +56,7 @@ const styles = StyleSheet.create({
   skeleton: {
     backgroundColor: colors.divider.light,
     borderRadius: borderRadius.sm,
+    overflow: 'hidden',
   },
   cardContainer: {
     flex: 1,

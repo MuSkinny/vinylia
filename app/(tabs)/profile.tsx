@@ -1,12 +1,14 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Settings } from 'lucide-react-native';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/contexts/AuthContext';
 import { vinylService } from '@/services/vinyl-service';
 import { collectionService } from '@/services/collection-service';
+import { profileService } from '@/services/profile-service';
 import { VinylCard, CollectionCard } from '@/components';
+import { Toggle } from '@/components/Toggle';
 import { useToast } from '@/hooks';
 import { colors, typography, spacing, borderRadius } from '@/theme';
 import type { MoodType } from '@/theme';
@@ -14,6 +16,9 @@ import type { MoodType } from '@/theme';
 export default function ProfileScreen() {
   const { profile, user, signOut } = useAuth();
   const router = useRouter();
+  const queryClient = useQueryClient();
+  const [libraryPublic, setLibraryPublic] = useState(true);
+  const [storiesPublic, setStoriesPublic] = useState(true);
 
   const { data: library = [] } = useQuery({
     queryKey: ['library', user?.id],
@@ -28,6 +33,34 @@ export default function ProfileScreen() {
   });
 
   const { showToast } = useToast();
+
+  // Load privacy settings
+  useEffect(() => {
+    const loadPrivacySettings = async () => {
+      if (!user?.id) return;
+      try {
+        const settings = await profileService.getPrivacySettings(user.id);
+        setLibraryPublic(settings?.default_library_public ?? true);
+        setStoriesPublic(settings?.default_stories_public ?? true);
+      } catch (error) {
+        console.error('Failed to load privacy settings:', error);
+      }
+    };
+    loadPrivacySettings();
+  }, [user?.id]);
+
+  // Privacy settings mutation
+  const updatePrivacyMutation = useMutation({
+    mutationFn: ({ field, value }: { field: string; value: boolean }) =>
+      profileService.updatePrivacySettings(user!.id, { [field]: value }),
+    onSuccess: () => {
+      showToast('Privacy settings updated', 'success');
+      queryClient.invalidateQueries({ queryKey: ['profile'] });
+    },
+    onError: () => {
+      showToast('Failed to update settings', 'error');
+    },
+  });
 
   // Transform library data
   const vinyls = library.map((item: any) => ({
@@ -61,7 +94,10 @@ export default function ProfileScreen() {
         </TouchableOpacity>
       </View>
 
-      <ScrollView showsVerticalScrollIndicator={false}>
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.scrollContent}
+      >
         {/* Profile Info */}
         <View style={styles.profileSection}>
           <View style={styles.avatar}>
@@ -186,7 +222,10 @@ export default function ProfileScreen() {
           <Text style={styles.sectionTitleSmall}>Account</Text>
           <View style={styles.dividerThin} />
 
-          <TouchableOpacity style={styles.menuItem}>
+          <TouchableOpacity
+            style={styles.menuItem}
+            onPress={() => router.push('/edit-profile')}
+          >
             <Text style={styles.menuText}>Edit Profile</Text>
           </TouchableOpacity>
 
@@ -199,26 +238,52 @@ export default function ProfileScreen() {
           <Text style={styles.sectionTitleSmall}>Privacy</Text>
           <View style={styles.dividerThin} />
 
-          <TouchableOpacity style={styles.menuItem}>
-            <Text style={styles.menuText}>Library Visibility</Text>
-            <Text style={styles.menuValue}>Public</Text>
-          </TouchableOpacity>
+          <View style={styles.toggleContainer}>
+            <Toggle
+              label="Library Visibility"
+              description="Make your vinyl collection visible to others"
+              value={libraryPublic}
+              onValueChange={(value) => {
+                setLibraryPublic(value);
+                updatePrivacyMutation.mutate({
+                  field: 'default_library_public',
+                  value,
+                });
+              }}
+            />
+          </View>
 
-          <TouchableOpacity style={styles.menuItem}>
-            <Text style={styles.menuText}>Story Sharing</Text>
-            <Text style={styles.menuValue}>On</Text>
-          </TouchableOpacity>
+          <View style={styles.toggleContainer}>
+            <Toggle
+              label="Story Sharing"
+              description="Allow your stories to appear in the community feed"
+              value={storiesPublic}
+              onValueChange={(value) => {
+                setStoriesPublic(value);
+                updatePrivacyMutation.mutate({
+                  field: 'default_stories_public',
+                  value,
+                });
+              }}
+            />
+          </View>
 
           <View style={styles.spacer} />
 
           <Text style={styles.sectionTitleSmall}>About</Text>
           <View style={styles.dividerThin} />
 
-          <TouchableOpacity style={styles.menuItem}>
+          <TouchableOpacity
+            style={styles.menuItem}
+            onPress={() => router.push('/about')}
+          >
             <Text style={styles.menuText}>About Vinylia</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.menuItem}>
+          <TouchableOpacity
+            style={styles.menuItem}
+            onPress={() => router.push('/privacy-policy')}
+          >
             <Text style={styles.menuText}>Privacy Policy</Text>
           </TouchableOpacity>
 
@@ -239,6 +304,9 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background.base,
+  },
+  scrollContent: {
+    paddingBottom: 120,
   },
   header: {
     flexDirection: 'row',
@@ -384,6 +452,9 @@ const styles = StyleSheet.create({
   menuValue: {
     ...typography.body,
     color: colors.text.muted,
+  },
+  toggleContainer: {
+    paddingVertical: spacing.xs,
   },
   spacer: {
     height: spacing.lg,

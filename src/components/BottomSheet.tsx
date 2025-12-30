@@ -111,7 +111,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.background.surface,
     borderTopLeftRadius: borderRadius.xl,
     borderTopRightRadius: borderRadius.xl,
-    maxHeight: SCREEN_HEIGHT * 0.9,
+    height: SCREEN_HEIGHT * 0.75,
     paddingBottom: spacing.xl,
     ...shadows.medium,
   },
@@ -141,6 +141,7 @@ const styles = StyleSheet.create({
     padding: spacing.sm,
   },
   content: {
+    flex: 1,
     paddingHorizontal: spacing.lg,
   },
 });

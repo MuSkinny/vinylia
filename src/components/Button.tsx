@@ -1,5 +1,6 @@
 import React from 'react';
 import { Pressable, Text, ActivityIndicator, StyleSheet, ViewStyle, TextStyle } from 'react-native';
+import * as Haptics from 'expo-haptics';
 import { colors, typography, borderRadius, spacing } from '../theme';
 
 interface ButtonProps {
@@ -37,13 +38,20 @@ export const Button: React.FC<ButtonProps> = ({
     styles[`text_${variant}` as keyof typeof styles] as TextStyle,
   ];
 
+  const handlePress = () => {
+    if (!disabled && !loading) {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+      onPress();
+    }
+  };
+
   return (
     <Pressable
       style={({ pressed }) => [
         ...buttonStyles,
         pressed && !disabled && styles.pressed,
       ]}
-      onPress={onPress}
+      onPress={handlePress}
       disabled={disabled || loading}
       accessible={true}
       accessibilityRole="button"

@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, Image, Pressable, StyleSheet } from 'react-native';
+import * as Haptics from 'expo-haptics';
 import { colors, typography, borderRadius, spacing } from '../theme';
 import type { MoodType } from '../theme';
 
@@ -13,7 +14,7 @@ interface VinylCardProps {
   onLongPress?: () => void;
 }
 
-export const VinylCard: React.FC<VinylCardProps> = ({
+const VinylCardComponent: React.FC<VinylCardProps> = ({
   coverUrl,
   artist,
   album,
@@ -21,9 +22,14 @@ export const VinylCard: React.FC<VinylCardProps> = ({
   onPress,
   onLongPress,
 }) => {
+  const handlePress = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    onPress();
+  };
+
   return (
     <Pressable
-      onPress={onPress}
+      onPress={handlePress}
       onLongPress={onLongPress}
       style={({ pressed }) => [
         styles.container,
@@ -55,6 +61,9 @@ export const VinylCard: React.FC<VinylCardProps> = ({
     </Pressable>
   );
 };
+
+// Export memoized version to prevent unnecessary re-renders
+export const VinylCard = React.memo(VinylCardComponent);
 
 const styles = StyleSheet.create({
   container: {

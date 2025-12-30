@@ -31,6 +31,7 @@ export default function UserProfileScreen() {
     queryKey: ['userProfile', userId],
     queryFn: () => socialService.getUserProfile(userId!),
     enabled: !!userId,
+    staleTime: 30 * 60 * 1000, // 30 minutes - user profiles rarely change
   });
 
   // Fetch library
@@ -38,6 +39,7 @@ export default function UserProfileScreen() {
     queryKey: ['userLibrary', userId],
     queryFn: () => socialService.getUserLibrary(userId!),
     enabled: !!userId && activeTab === 'library',
+    staleTime: 10 * 60 * 1000, // 10 minutes
   });
 
   // Fetch stories
@@ -45,6 +47,7 @@ export default function UserProfileScreen() {
     queryKey: ['userStories', userId],
     queryFn: () => socialService.getUserStories(userId!),
     enabled: !!userId && activeTab === 'stories',
+    staleTime: 5 * 60 * 1000, // 5 minutes
   });
 
   // Check if following
@@ -52,6 +55,7 @@ export default function UserProfileScreen() {
     queryKey: ['isFollowing', userId],
     queryFn: () => socialService.isFollowing(userId!),
     enabled: !!userId && userId !== user?.id,
+    staleTime: 60 * 60 * 1000, // 1 hour - follow status is stable
   });
 
   // Follow mutation

@@ -70,21 +70,13 @@ export const storyService = {
 
     if (error) throw error;
 
-    // Get like and comment counts for each story
-    const storiesWithCounts = await Promise.all(
-      (data || []).map(async (story) => {
-        const [{ count: likeCount }, { count: commentCount }] = await Promise.all([
-          supabase.from('likes').select('*', { count: 'exact', head: true }).eq('story_id', story.id),
-          supabase.from('comments').select('*', { count: 'exact', head: true }).eq('story_id', story.id),
-        ]);
-
-        return {
-          ...story,
-          like_count: likeCount || 0,
-          comment_count: commentCount || 0,
-        };
-      })
-    );
+    // TODO: Add engagement counts once story_engagement_counts view is created
+    // For now, return stories with 0 counts
+    const storiesWithCounts = (data || []).map((story: any) => ({
+      ...story,
+      like_count: 0,
+      comment_count: 0,
+    }));
 
     return storiesWithCounts;
   },
@@ -114,21 +106,13 @@ export const storyService = {
 
     console.log(`Loaded ${data?.length || 0} stories for discover feed`);
 
-    // Get like and comment counts for each story
-    const storiesWithCounts = await Promise.all(
-      (data || []).map(async (story) => {
-        const [{ count: likeCount }, { count: commentCount }] = await Promise.all([
-          supabase.from('likes').select('*', { count: 'exact', head: true }).eq('story_id', story.id),
-          supabase.from('comments').select('*', { count: 'exact', head: true }).eq('story_id', story.id),
-        ]);
-
-        return {
-          ...story,
-          like_count: likeCount || 0,
-          comment_count: commentCount || 0,
-        };
-      })
-    );
+    // TODO: Add engagement counts once story_engagement_counts view is created
+    // For now, return stories with 0 counts
+    const storiesWithCounts = (data || []).map((story: any) => ({
+      ...story,
+      like_count: 0,
+      comment_count: 0,
+    }));
 
     return storiesWithCounts;
   },

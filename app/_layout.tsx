@@ -15,7 +15,8 @@ const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       retry: 2,
-      staleTime: 5 * 60 * 1000,
+      staleTime: 5 * 60 * 1000, // 5 min default
+      gcTime: 10 * 60 * 1000,   // Keep in cache 10 min after inactive
     },
   },
 });

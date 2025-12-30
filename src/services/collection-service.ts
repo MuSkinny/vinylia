@@ -37,13 +37,24 @@ export const collectionService = {
       .from('collections')
       .select(`
         *,
-        collection_items(count)
+        items:collection_items(
+          *,
+          user_vinyl:user_vinyls(
+            *,
+            vinyl:vinyls(*)
+          )
+        )
       `)
       .eq('user_id', userId)
       .order('created_at', { ascending: false });
 
     if (error) throw error;
-    return data;
+
+    // Transform to add vinyl_count
+    return (data || []).map((collection: any) => ({
+      ...collection,
+      vinyl_count: collection.items?.length || 0,
+    }));
   },
 
   // Get single collection with all vinyls
@@ -302,7 +313,14 @@ export const collectionService = {
       .select(`
         *,
         user:profiles(*),
-        collection_items(count)
+        items:collection_items(
+          *,
+          user_vinyl:user_vinyls(
+            *,
+            vinyl:vinyls(*)
+          )
+        ),
+        saves:collection_save_counts(save_count)
       `)
       .eq('is_public', true)
       .order('created_at', { ascending: false })
@@ -313,33 +331,24 @@ export const collectionService = {
     // Get current user
     const { data: { user } } = await supabase.auth.getUser();
 
-    // Get save counts and is_saved for each collection
-    const collectionsWithStats = await Promise.all(
-      (data || []).map(async (collection) => {
-        const { count } = await supabase
-          .from('collection_saves')
-          .select('*', { count: 'exact', head: true })
-          .eq('collection_id', collection.id);
+    // For current user's saved status, do ONE query
+    let userSavedCollectionIds = new Set<string>();
+    if (user && data && data.length > 0) {
+      const { data: userSaves } = await supabase
+        .from('collection_saves')
+        .select('collection_id')
+        .eq('user_id', user.id)
+        .in('collection_id', data.map(c => c.id));
+      userSavedCollectionIds = new Set((userSaves || []).map(s => s.collection_id));
+    }
 
-        // Check if current user saved it
-        let isSaved = false;
-        if (user) {
-          const { data: save } = await supabase
-            .from('collection_saves')
-            .select('id')
-            .eq('collection_id', collection.id)
-            .eq('user_id', user.id)
-            .single();
-          isSaved = !!save;
-        }
-
-        return {
-          ...collection,
-          save_count: count || 0,
-          is_saved: isSaved,
-        };
-      })
-    );
+    // Map with pre-fetched data
+    const collectionsWithStats = (data || []).map((collection: any) => ({
+      ...collection,
+      vinyl_count: collection.items?.length || 0,
+      save_count: collection.saves?.save_count || 0,
+      is_saved: userSavedCollectionIds.has(collection.id),
+    }));
 
     return collectionsWithStats;
   },
@@ -351,18 +360,35 @@ export const collectionService = {
       .select(`
         *,
         user:profiles(*),
-        collection_items(count)
+        items:collection_items(
+          *,
+          user_vinyl:user_vinyls(
+            *,
+            vinyl:vinyls(*)
+          )
+        )
       `)
       .eq('is_public', true)
       .eq('mood', mood)
       .order('created_at', { ascending: false });
 
     if (error) throw error;
-    return data;
+
+    // Add vinyl_count to each collection
+    return (data || []).map(collection => ({
+      ...collection,
+      vinyl_count: collection.items?.length || 0,
+    }));
   },
 
   // Get trending collections (most saved recently)
   async getTrendingCollections(limit: number = 10) {
+    // Always fallback to public collections for now
+    // TODO: Implement trending logic once we have more saves
+    console.log('Loading public collections as trending...');
+    return this.getPublicCollections(limit);
+
+    /* Original trending logic - restore when you have save activity
     // Get collections saved in the last 7 days
     const sevenDaysAgo = new Date();
     sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
@@ -391,13 +417,20 @@ export const collectionService = {
       return this.getPublicCollections(limit);
     }
 
-    // Fetch collection details
+    // Fetch collection details with vinyl data
     const { data, error } = await supabase
       .from('collections')
       .select(`
         *,
         user:profiles(*),
-        collection_items(count)
+        items:collection_items(
+          *,
+          user_vinyl:user_vinyls(
+            *,
+            vinyl:vinyls(*)
+          )
+        ),
+        saves:collection_save_counts(save_count)
       `)
       .in('id', topCollectionIds)
       .eq('is_public', true);
@@ -407,29 +440,26 @@ export const collectionService = {
     // Get current user
     const { data: { user } } = await supabase.auth.getUser();
 
-    // Add save counts and is_saved for each collection
-    const collectionsWithStats = await Promise.all(
-      (data || []).map(async (collection) => {
-        // Check if current user saved it
-        let isSaved = false;
-        if (user) {
-          const { data: save } = await supabase
-            .from('collection_saves')
-            .select('id')
-            .eq('collection_id', collection.id)
-            .eq('user_id', user.id)
-            .single();
-          isSaved = !!save;
-        }
+    // For current user's saved status, do ONE query
+    let userSavedCollectionIds = new Set<string>();
+    if (user && data && data.length > 0) {
+      const { data: userSaves } = await supabase
+        .from('collection_saves')
+        .select('collection_id')
+        .eq('user_id', user.id)
+        .in('collection_id', data.map(c => c.id));
+      userSavedCollectionIds = new Set((userSaves || []).map(s => s.collection_id));
+    }
 
-        return {
-          ...collection,
-          save_count: saveCounts[collection.id] || 0,
-          is_saved: isSaved,
-        };
-      })
-    );
+    // Map with pre-fetched data
+    const collectionsWithStats = (data || []).map((collection: any) => ({
+      ...collection,
+      vinyl_count: collection.items?.length || 0,
+      save_count: saveCounts[collection.id] || 0,
+      is_saved: userSavedCollectionIds.has(collection.id),
+    }));
 
     return collectionsWithStats;
+    */
   },
 };

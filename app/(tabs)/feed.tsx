@@ -23,6 +23,7 @@ export default function FeedScreen() {
     queryFn: () => storyService.getDiscoverFeed(),
     enabled: activeTab === 'following' || activeTab === 'discover',
     select: (data) => data.slice(0, 10),
+    staleTime: 2 * 60 * 1000, // 2 minutes - fresh content
   });
 
   // Collections query
@@ -30,6 +31,7 @@ export default function FeedScreen() {
     queryKey: ['trendingCollections'],
     queryFn: () => collectionService.getTrendingCollections(20),
     enabled: activeTab === 'collections',
+    staleTime: 30 * 60 * 1000, // 30 minutes - trending changes slowly
   });
 
   // User's resonances query
@@ -39,7 +41,7 @@ export default function FeedScreen() {
     enabled: activeTab === 'following' || activeTab === 'discover',
   });
 
-  // Resonance mutation
+  // Resonance mutation with optimistic updates
   const resonanceMutation = useMutation({
     mutationFn: async ({ storyId, hasResonated }: { storyId: string; hasResonated: boolean }) => {
       if (hasResonated) {
@@ -48,9 +50,36 @@ export default function FeedScreen() {
         await socialService.resonateWithStory(storyId);
       }
     },
-    onSuccess: () => {
+    onMutate: async ({ storyId, hasResonated }) => {
+      // Cancel outgoing refetches
+      await queryClient.cancelQueries({ queryKey: ['userResonances'] });
+
+      // Snapshot previous value
+      const previousResonances = queryClient.getQueryData(['userResonances']);
+
+      // Optimistically update
+      queryClient.setQueryData(['userResonances'], (old: Set<string>) => {
+        const newSet = new Set(old);
+        if (hasResonated) {
+          newSet.delete(storyId);
+        } else {
+          newSet.add(storyId);
+        }
+        return newSet;
+      });
+
+      return { previousResonances };
+    },
+    onError: (err, variables, context: any) => {
+      // Rollback on error
+      if (context?.previousResonances) {
+        queryClient.setQueryData(['userResonances'], context.previousResonances);
+      }
+    },
+    onSettled: () => {
+      // Only invalidate specific tab, not all feeds
+      queryClient.invalidateQueries({ queryKey: ['feed', activeTab] });
       queryClient.invalidateQueries({ queryKey: ['userResonances'] });
-      queryClient.invalidateQueries({ queryKey: ['feed'] });
     },
   });
 
@@ -287,7 +316,7 @@ const styles = StyleSheet.create({
   },
   list: {
     paddingHorizontal: spacing.lg,
-    paddingBottom: 100,
+    paddingBottom: 120,
   },
   storyCard: {
     backgroundColor: colors.background.surface,

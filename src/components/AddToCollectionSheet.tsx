@@ -146,7 +146,7 @@ export function AddToCollectionSheet({
   };
 
   return (
-    <BottomSheet isVisible={isVisible} onClose={onClose} snapPoints={['75%']}>
+    <BottomSheet visible={isVisible} onClose={onClose}>
       <View style={styles.container}>
         {/* Header */}
         <View style={styles.header}>
